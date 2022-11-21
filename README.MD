@@ -4,7 +4,7 @@ Simple HTTP server from scratch written in C.
 ## Usage
 
 ## How It Works
-![alt text](./src/media/simple-socket-diagram.png)
+![alt text](./src/media/simple-socket-diagram.png) 
 
 
 ## Resources Used
