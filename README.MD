@@ -30,11 +30,11 @@ Accept-Language: fr
 ```
 Note after the `GET /index.html HTTP/1.1` start line, below it are examples of HTTP headers that pass extra info.
 
-Once the server receives the request, it will send out an HTTP response which is similar except the first line is the status line that includdes the HTTP version, status code (eg. 404), and a status text (eg. Not Found). Below is an example of an HTTP response:
+Once the server receives the request, it will send out an HTTP response where the first line is the status line that includes the HTTP version, status code (eg. 404), and a status text (eg. Not Found). Once again, HTTP headers can be included for extra info. Below is an example of an HTTP response:
 ```
 HTTP/1.1 200 OK
-```
-Once again, HTTP headers can be included for extra info. In HTTP 2 uses frames but this project is focused on 1.x.
+``` 
+In HTTP 2 uses frames but this project is focused on HTTP 1.1. For more info check the Mozilla Developer docmentation listed below.
 
 
 ### Next Steps/Improvements to make
