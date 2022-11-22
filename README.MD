@@ -11,11 +11,15 @@ gcc http-server.c -o http-server.o
 
 ## Project Write-Up
 ### Background
-HTTP is an application layer protocol that defines how a browser and server communicates and delivers data. HTTP mainly uses TCP for the transport protocol. In order to implement the transport protocol, the use of sockets and socket programming is required to establish a communication link between the client and server. Below is a diagram that shows how a typical TCP connection can be established.
+HTTP is an application layer protocol that defines how a browser and server communicates and delivers data. HTTP mostly uses TCP for the transport protocol. In order to implement the transport protocol, the use of sockets and socket programming is required to establish a communication link between the client and server. Below is a diagram that shows how a typical TCP connection can be established.
 
 ![alt text](./src/media/simple-socket-diagram.png)
-For code example, see [simple_tcp folder](https://github.com/jamesyoung-15/http-server/tree/main/simple_tcp).
 
+Very simply, on the server side we first create a socket. Then, we bind the socket to an IP address and port. Afterwards, the server will listen for incoming connection and once the client's connection is accepted, the client and server can read/write to each other. The client side is much simpler, where we just need to create a socket and connect to the IP and port of server. Once a communication is finished, we close the socket. For code of a simple TCP server and client, see [simple_tcp folder](https://github.com/jamesyoung-15/http-server/tree/main/simple_tcp).
+
+Now HTTP's implementation looks something like this:
+
+![alt text](./src/media/http-diagram.png)
 
 
 ### Next Steps/Improvements to make
