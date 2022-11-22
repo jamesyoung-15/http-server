@@ -12,7 +12,7 @@ gcc http-server.c -o http-server.o
 
 ## Project Write-Up
 ### Project Background
-<details> <summary>Click to Expand/Collapse</summary>
+<details> <summary><h4>Click to Expand/Collapse</h4></summary>
 HTTP is an application layer protocol that defines how a browser and server communicates and delivers data. HTTP mostly uses TCP for the transport protocol. In order to implement the transport protocol, the use of sockets and socket programming is required to establish a communication link between the client and server. Below is a diagram that shows how a typical TCP connection can be established.
 
 ![alt text](./src/media/simple-socket-diagram.png)
@@ -39,7 +39,7 @@ In HTTP 2 uses frames but this project is focused on HTTP 1.1. For more info che
 </details>
 
 ### Next Steps/Improvements to make
-<details open><summary>Click to Expand/Collapse</summary>
+<details open><summary><h4>Click to Expand/Collapse</h4></summary>
 This HTTP server is very simple and I plan to work on it a bit more when I have time. For performance, the server lacks multi-threading to handle concurrent connections. Feature-wise, I may add things like file-serving and so on. There are also probably many security issues with this server. For example, the server could be vulnerable to buffer overflow attack that can be exploited with a HTTP GET request.
 </details>
 
