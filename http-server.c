@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -9,28 +10,21 @@
 #include <netinet/in.h>
 
 #define PORT 4545
-#define BUFFERSIZE 1024
+#define BUFFERSIZE 2048
 
-/*function for http response*/
-void httpHeader()
-{
-    //variable for http response
-    char *http_header = "HTTP/1.1 200 OK\n";
-
-    //open index.html file
-    FILE *htmlFile = fopen("./src/index.html", "r");
-
-}
 
 
 int main()
 {
     //variables for socket
     struct sockaddr_in server_address, client_address; //client and server address structs
-    int serverFd, clientFd; //file descriptors
+    int serverFd, clientFd, fileFd; //file descriptors
     int serv_address_length = sizeof(server_address); //get size of server address struct
     int client_address_length = sizeof(client_address); //get size of client address struct
     char buf[BUFFERSIZE] = {0}; //buffer for http request
+    char *testResponsee = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!"; //http response test
+    char *forbiddenResponse = "HTTP/1.1 403 Forbidden\n Content-Type: text/plain\n Content-Length: 13\n\n403 Forbidden";
+    char *htmlResponse = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><head>Hello World. This is my static page.</head></html>";
 
     //create socket
     serverFd = socket(AF_INET, //domain type
@@ -56,6 +50,7 @@ int main()
     if(bind(serverFd, (struct sockaddr *) &server_address, client_address_length)<0)
     {
         perror("Couldn't bind socket");
+        close(serverFd);
         return 1;
     }
     printf("Socket binded\n");
@@ -64,6 +59,7 @@ int main()
     if(listen(serverFd, SOMAXCONN)<0)
     {
         perror("Error listening\n");
+        close(serverFd);
         return 1;
     }
     printf("Socket is listening for incoming connection\n");
@@ -72,9 +68,9 @@ int main()
     while(1)
     {
         //accept incoming connection, see man accept for more details
-        int acceptFd = accept(serverFd, (struct sockaddr *)&client_address, (socklen_t *) &client_address);
+        int clientFd = accept(serverFd, (struct sockaddr *)&client_address, (socklen_t *) &client_address);
         //check whether client's connection attempt was accepted
-        if(acceptFd<0)
+        if(clientFd<0)
         {
             perror("Connection declined/error\n");
             continue;
@@ -82,9 +78,45 @@ int main()
         printf("Client connected\n");
 
         //read request from client
-        
-    }
+        int valread = read(clientFd,buf,sizeof(buf));
+        //if request has error, return status code 403
+        if(valread<=0)
+        {
+            write(clientFd,forbiddenResponse,strlen(forbiddenResponse));
+        }
+        //printf("%s\n",&buf[0]);
+        //skip GET and space (hence i=4) to get to filepath, stop once second space is detected
+        int targetLength = 0;
+        for(int i=4;i<BUFFERSIZE;i++)
+        {
+            if(buf[i]==' ')
+            {
+                break;
+            }
+            else 
+            {
+                targetLength++;
+            }
+        }
+        char targetPath[targetLength];
+        //not working change tmr
+        for(int i = 0;i<targetLength;i++)
+        {
+            targetPath[i] = buf[i+4];
+        }
+        //printf("%d: %s\n",targetLength,targetPath);
+        //if request line is GET / with no filename, redirect to index.html by writing GET /src/index.html
 
+
+
+        //write(clientFd,testResponsee,strlen(testResponsee));
+        write(clientFd, htmlResponse, strlen(htmlResponse));
+
+
+        //close sockets
+        close(clientFd);
+        //close(htmlData);
+    }
     //close server socket
     close(serverFd);
 

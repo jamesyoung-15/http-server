@@ -42,9 +42,10 @@ In HTTP 2 uses frames but this project is focused on HTTP 1.1. For more info che
 <details open><summary><h5>Collapse/Expand</h5></summary>
 In progress.
 </details>
+
 ### Next Steps/Improvements to make
 <details open><summary><h5>Collapse/Expand</h5></summary>
-This HTTP server is very simple and I plan to work on it a bit more when I have time. For performance, the server lacks multi-threading to handle concurrent connections. Feature-wise, I may add things like file-serving and so on. There are also probably many security issues with this server. For example, the server could be vulnerable to buffer overflow attack that can be exploited with a HTTP GET request.
+This HTTP server is very simple and I plan to work on it a bit more when I have time. For performance, the server lacks multi-threading to handle concurrent connections. I also need to add checks for HTTP status codes. There are also probably many security issues with this server. For example, the server could be vulnerable to buffer overflow attack that can be exploited with a HTTP GET request.
 </details>
 
 ## Resources Used
