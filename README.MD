@@ -11,7 +11,7 @@ gcc http-server.c -o http-server.o
 ```
 
 ## Project Write-Up
-### Background
+<details><summary>Basic Background</summary>
 HTTP is an application layer protocol that defines how a browser and server communicates and delivers data. HTTP mostly uses TCP for the transport protocol. In order to implement the transport protocol, the use of sockets and socket programming is required to establish a communication link between the client and server. Below is a diagram that shows how a typical TCP connection can be established.
 
 ![alt text](./src/media/simple-socket-diagram.png)
@@ -35,10 +35,10 @@ Once the server receives the request, it will send out an HTTP response where th
 HTTP/1.1 200 OK
 ``` 
 In HTTP 2 uses frames but this project is focused on HTTP 1.1. For more info check the Mozilla Developer docmentation listed below.
-
+</details>
 
 ### Next Steps/Improvements to make
-This HTTP server is very simple and lacks performance and features. For performance, I plan on implementing multi-threading to handle concurrent connections. Feature-wise, I plan on adding file-serving. There are also probably many security issues with this server. It is possible that my server could be vulnerable to buffer overflow that can be exploited with a http GET request. However, my understanding of this cybersecurity isn't great so I'm not sure.
+This HTTP server is very simple and I plan to work on it a bit more when I have time. For performance, the server lacks multi-threading to handle concurrent connections. Feature-wise, I may add things like file-serving and so on. There are also probably many security issues with this server. For example, the server could be vulnerable to buffer overflow attack that can be exploited with a HTTP GET request.
 
 ## Resources Used
 - [Beej Guide](https://beej.us/guide/bgnet/html/#client-server-background)
