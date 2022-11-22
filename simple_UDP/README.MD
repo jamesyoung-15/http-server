@@ -1,0 +1,2 @@
+# Simple UDP Client and Server
+UDP client and server in Python. Taken from [Computer Networking: A Top Down Approach](https://gaia.cs.umass.edu/kurose_ross/index.php) textbook  as example for me to study. UDP also uses socket programming and has similar implementation as TCP connection (both need to create socket, bind, send/receive, close) but UDP server does not need to listen and accept connection since it is a connectionless protocol (no handshaking required).
