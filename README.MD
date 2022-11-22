@@ -2,11 +2,12 @@
 Simple HTTP server from scratch written in C. I decided to create this personal project to practice some basic C programming while also applying some computer networking knowledge I learned in class.
 
 ## Usage
-Assuming on Linux/Unix machine. Feel free to test it out.
+Assuming on Linux/Unix machine.
 ``` bash
 git clone https://github.com/jamesyoung-15/http-server.git
 cd http-server
 gcc http-server.c -o http-server.o
+./http-server.o
 ```
 
 ## Project Write-Up
@@ -15,11 +16,25 @@ HTTP is an application layer protocol that defines how a browser and server comm
 
 ![alt text](./src/media/simple-socket-diagram.png)
 
-Very simply, on the server side we first create a socket. Then, we bind the socket to an IP address and port. Afterwards, the server will listen for incoming connection and once the client's connection is accepted, the client and server can read/write to each other. The client side is much simpler, where we just need to create a socket and connect to the IP and port of server. Once a communication is finished, we close the socket. For code of a simple TCP server and client, see [simple_tcp folder](https://github.com/jamesyoung-15/http-server/tree/main/simple_tcp).
+Very simply, on the server side we first create a socket. Then, we bind the socket to an IP address and port. Afterwards, the server socket will listen for incoming connection and once the client's connection is accepted, the client and server can transfer data to each other. The client side is much simpler, where we just need to create a socket and connect to the server. Once a communication is finished, we close the socket. For code of a simple TCP server and client, see [simple_tcp folder](https://github.com/jamesyoung-15/http-server/tree/main/simple_tcp).
 
-Now HTTP's implementation looks something like this:
+Building on top of the TCP transport protocol described above, HTTP adds it's application layer protocol as shown below:
 
 ![alt text](./src/media/http-diagram.png)
+
+As seen, once connection is established the client writes an HTTP request. Whilst the format and content of HTTP request differ based on different HTTP versions, certain principles stay the same. The request message should consist of a method (eg. GET) that tells the server what it should do. Next should be the path to the requested target (eg. /index.html). Finally it should include the HTTP version. Here is an example of a request message: 
+```
+GET /index.html HTTP/1.1
+Host: developer.mozilla.org
+Accept-Language: fr
+```
+Note after the `GET /index.html HTTP/1.1` start line, below it are examples of HTTP headers that pass extra info.
+
+Once the server receives the request, it will send out an HTTP response which is similar except the first line is the status line that includdes the HTTP version, status code (eg. 404), and a status text (eg. Not Found). Below is an example of an HTTP response:
+```
+HTTP/1.1 200 OK
+```
+Once again, HTTP headers can be included for extra info. In HTTP 2 uses frames but this project is focused on 1.x.
 
 
 ### Next Steps/Improvements to make
