@@ -3,7 +3,7 @@ Simple HTTP server from scratch written in C. I decided to create this personal 
 
 ## Demo
 
-![alt text](https://github.com/jamesyoung-15/http-server/blob/main/images/http-demo.gif)
+![alt text](https://github.com/jamesyoung-15/http-server/blob/main/src/images/http-demo.gif)
 ## Usage
 Assuming on Linux/Unix machine.
 ``` bash
