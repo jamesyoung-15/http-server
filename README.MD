@@ -189,9 +189,9 @@ The [code](https://github.com/jamesyoung-15/http-server/blob/main/http-server.c)
         fclose(file);
     }
     ```
-And that's it. It might not be the cleanest or best solution especially with regards to memory but it works.
-
+And that's it. We can now serve static web pages (html) and images (gifs, png, etc) on a web browser in a local network.
 </details>
+
 
 ### Next Steps/Improvements to make
 <details open><summary><h5>Collapse/Expand</h5></summary>
@@ -204,6 +204,6 @@ This HTTP server is very simple and I plan to work on it a bit more when I have 
 - [Youtube Playlist of Labs of CSE4202 from Inha University](https://www.youtube.com/playlist?list=PLZIwlOSv75K7jXcVABdIo3wyKp5NwXKlW) 
 - [Computer Networking: A Top Down Approach](https://gaia.cs.umass.edu/kurose_ross/index.php) (Textbook used in course I'm taking)
 - [Blog Post Example](https://bruinsslot.jp/post/simple-http-webserver-in-c/)
-- [Medium Blog Post](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-knoPostExample-simple-http-server-from-scratch-d1ef8945e4fa)
+- [Medium Blog Post Example](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-knoPostExample-simple-http-server-from-scratch-d1ef8945e4fa)
 -  RFC 7230, RFC 7231, RFC 7232, RFC 7233, RFC 7234, RFC 7235 (official resources for HTTP 1.1)
 - `Man` pages of `socket`, `man 7 ip`, etc. 
