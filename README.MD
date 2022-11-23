@@ -141,10 +141,13 @@ The code follows closely to the logic and steps explained in the background abov
             fileExtension[i-fileNameLength]=targetPath[i];
         }
         ```
-    - Once we obtained the file path and extension, we open the file with `fopen`, check for error 404 (ie. make sure it's not null), then we first send the corresponding HTTP response with the correct content type header and then send the actual file itself with fread() to read file and send() to send.
+    - Once we obtained the file path and extension, we open the file with `fopen`.
     ```
     //open file
     FILE *file = fopen(targetPath,"rb");
+    ```
+    - Check for null, if null means file doesn't exist and we return error status 404.
+    ```
     //if can't open file, return null and write 404 error
     if(file == NULL)
     {
@@ -153,6 +156,10 @@ The code follows closely to the logic and steps explained in the background abov
         printf("Response:\n%s\n",httpResponse);
         write(clientFd,httpResponse,strlen(httpResponse));
     }
+    ```
+    - Otherwise we then use the extension name from before and match it with the struct `contentType` to get the correct content type header for the HTTP response. Then we write and send the HTTP response to the client, then send the file requested to the client.
+
+    ```
     //else send http response and requested file
     else{
         //using extension name to get relevant content type field string, eg. html will mean content type is text/html
@@ -182,7 +189,8 @@ The code follows closely to the logic and steps explained in the background abov
         fclose(file);
     }
     ```
-And that's it.
+And that's it. It might not be the cleanest or best solution especially with regards to char and string but it works.
+
 </details>
 
 ### Next Steps/Improvements to make
