@@ -189,7 +189,7 @@ The code follows closely to the logic and steps explained in the background abov
         fclose(file);
     }
     ```
-And that's it. It might not be the cleanest or best solution especially with regards to char and string but it works.
+And that's it. It might not be the cleanest or best solution especially with regards to memory but it works.
 
 </details>
 
