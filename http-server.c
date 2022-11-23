@@ -10,9 +10,24 @@
 #include <netinet/in.h>
 
 #define PORT 4545
-#define BUFFERSIZE 2048
+#define BUFFERSIZE 8096
+#define PATHSIZE 128
 
-
+struct{
+    char *extension;
+    char *filetype;
+} contentType[]={
+    {"gif", "image/gif" },
+    {"jpg", "image/jpg" },
+    {"jpeg","image/jpeg"},
+    {"png", "image/png" },
+    {"ico", "image/ico" },
+    {"zip", "image/zip" },
+    {"gz",  "image/gz"  },
+    {"tar", "image/tar" },
+    {"htm", "text/html" },
+    {"html","text/html" },
+    {0,0} };
 
 int main()
 {
@@ -21,10 +36,11 @@ int main()
     int serverFd, clientFd, fileFd; //file descriptors
     int serv_address_length = sizeof(server_address); //get size of server address struct
     int client_address_length = sizeof(client_address); //get size of client address struct
+    
+    
     char buf[BUFFERSIZE] = {0}; //buffer for http request
-    char *testResponsee = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!"; //http response test
-    char *forbiddenResponse = "HTTP/1.1 403 Forbidden\n Content-Type: text/plain\n Content-Length: 13\n\n403 Forbidden";
-    char htmlResponse[BUFFERSIZE]={0};
+    char *testResponsee = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
+    char httpResponse[BUFFERSIZE]={0};
 
     /*socket creation*/
     serverFd = socket(AF_INET, //domain type
@@ -65,8 +81,17 @@ int main()
     printf("Socket is listening for incoming connection\n");
 
     /*accept connection, read request, write response*/
-    while(1)
+    for(;;)
     {
+        //variables
+        int targetLength = 0;
+        char targetPath[PATHSIZE]={0};
+        char fileExtension[PATHSIZE]={0};
+        char *httpContent;
+        int fileNameLength=0;
+        int extensionLength=0;
+
+
         //accept incoming connection, see man accept for more details
         int clientFd = accept(serverFd, (struct sockaddr *)&client_address, (socklen_t *) &client_address);
         //check whether client's connection attempt was accepted
@@ -75,56 +100,105 @@ int main()
             perror("Connection declined/error\n");
             return 1;
         }
-        printf("Client connected\n");
+        printf("\nClient connected. Client's address: %s\n",inet_ntoa(client_address.sin_addr));
 
         //read request from client
         int valread = read(clientFd,buf,sizeof(buf));
         //if request has error, return status code 403
         if(valread<=0)
         {
-            write(clientFd,forbiddenResponse,strlen(forbiddenResponse));
+            sprintf(httpResponse, "HTTP/1.1 403 Forbidden\n Content-Type: text/plain\n Content-Length: 13\n\n403 Forbidden");
         }
+        printf("\nHTTP Request: \n\n%sEnd of HTTP Request\n\n", buf);
 
-        //skip GET and space (hence i=4) to get to filepath, stop once second space is detected
-        int targetLength = 0;
-        for(int i=4;i<BUFFERSIZE;i++)
+        //skip GET / (hence i=5) to get to filepath, stop once space is detected (means filepath ended) and set it to null
+        for(int i=5;i<BUFFERSIZE;i++)
         {
             if(buf[i]==' ')
             {
+                targetPath[i-5]='\0';
+                targetLength=i-5;
                 break;
             }
-            else 
+        }
+        //if request line is GET / with no filename, redirect to index.html by writing GET src/index.html
+        if(targetLength ==0 && (strcmp(targetPath, "\0")==0))
+        {
+            printf("No specific file/target name. Default to index.html\n");
+            strncpy(targetPath, "src/index.html", sizeof(targetPath));
+            targetLength = 10;
+        }
+        //get target path from http request buffer and put to char array
+        else
+        {
+            for(int i = 0;i<targetLength;i++)
             {
-                targetLength++;
+                targetPath[i] = buf[i+5];
             }
         }
-        //get target path and put to array, set last index to null
-        char targetPath[targetLength+1];
-        for(int i = 0;i<targetLength+1;i++)
+        //printf("Target has char length of %d and content is: %s.\n",targetLength,targetPath);
+        //get file extension
+        for (int i=0;i<PATHSIZE;i++)
         {
-            targetPath[i] = buf[i+4];
+            if(targetPath[i]=='.')
+            {
+                break;
+            }
+            fileNameLength++;
         }
-        targetPath[targetLength] ='\0';
-        printf("Target has char length of %d and content is: %s.\n",targetLength,targetPath);
-        //if request line is GET / with no filename, redirect to index.html by writing GET /src/index.html
-        if(targetLength==0)
+        //printf("File name length without extension length %d\n",fileNameLength);
+        fileNameLength+=1;
+        for(int i = fileNameLength;i<PATHSIZE;i++)
         {
-            perror("No target specified\n");
-            return 1;
+            if(targetPath[i]=='\0')
+            {
+                break;
+            }
+            fileExtension[i-fileNameLength]=targetPath[i];
         }
-        else if(targetLength ==1 && strcmp(targetPath, "/\0")==0)
+        //printf("Extension type: %s\n",fileExtension);
+
+        //open file
+        FILE *file = fopen(targetPath,"rb");
+        //if can't open file, return null and write 404 error
+        if(file == NULL)
         {
-            printf("Default to index.html\n");
-            //sprintf(htmlResponse,"HTTP/1.1 200 OK\nContent-Length: %d\nConnection: close\nContent-Type: %s\n\n" , );
+            printf("Client requested file cannot be found, error status 404.\n");
+            sprintf(httpResponse,"HTTP/1.1 404 Not Found\nContent-Type: text/plain\n\n404 Not Found");
+            printf("Response:\n%s\n",httpResponse);
+            write(clientFd,httpResponse,strlen(httpResponse));
+        }
+        //else send http response and requested file
+        else{
+            //using extension name to get relevant content type field string, eg. html will mean content type is text/html
+            for(int i=0;contentType[i].extension!=0;i++)
+            {
+                if(strncmp(fileExtension, contentType[i].extension, strlen(contentType[i].extension))==0)
+                {
+                    httpContent = contentType[i].extension;
+                    break;
+                }
+            }
+            //write and send http response
+            sprintf(httpResponse,"HTTP/1.1 200 OK\nServer: James' Server v0.1\nContent-Type: %s\n\n",httpContent);
+            write(clientFd, httpResponse, strlen(httpResponse));
+            size_t n;
+            char fileBuf[BUFFERSIZE]={0};
+            //send file
+            while((n=fread(fileBuf,1,sizeof(fileBuf),file))>0)
+            {
+                if(send(clientFd,fileBuf,n,0)!=n)
+                {
+                    perror("Couldn't send file.\n");
+                    break;
+                }
+            }
+            //close requested file, remember can't be null or else seg fault so keep it in this condition
+            fclose(file);
         }
 
-        write(clientFd,testResponsee,strlen(testResponsee));
-        //write(clientFd, htmlResponse, strlen(htmlResponse));
-
-
-        //close sockets
+        //close client socket
         close(clientFd);
-        //close(htmlData);
     }
     //close server socket
     close(serverFd);

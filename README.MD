@@ -12,20 +12,20 @@ cd http-server
 gcc http-server.c -o http-server.o
 ./http-server.o
 ```
-Then go to http://localhost:4545 on same machine. When using another machine use server IP eg. 192.168.0.15:4545.
+Then go to http://localhost:4545 on same machine. When using another machine use server IP eg. 192.168.0.15:4545. To access other files, state the file path (in this directory) eg. http://localhost:4545/images/testpic.png.
 
 ## Project Write-Up
 ### Background Info
 <details open><summary><h5>Collapse/Expand</h5></summary>
 HTTP is an application layer protocol that defines how a browser and server communicates and delivers data. HTTP mostly uses TCP for the transport protocol. In order to implement the transport protocol, the use of sockets and socket programming is required to establish a communication link between the client and server. Below is a diagram that shows how a typical TCP connection can be established.
 
-![alt text](./images/simple-socket-diagram.png)
+![alt text](./src/images/simple-socket-diagram.png)
 
 Very simply, on the server side we first create a socket. Then, we bind the socket to an IP address and port. Afterwards, the server socket will listen for incoming connection and once the client's connection is accepted, the client and server can transfer data to each other. The client side is much simpler, where we just need to create a socket and connect to the server. Once a communication is finished, we close the socket. For code of a simple TCP server and client, see [simple_tcp folder](https://github.com/jamesyoung-15/http-server/tree/main/simple_tcp).
 
 Building on top of the TCP transport protocol described above, HTTP adds it's application layer protocol as shown below:
 
-![alt text](./images/http-diagram.png)
+![alt text](./src/images/http-diagram.png)
 
 As seen, once connection is established the client writes an HTTP request. Whilst the format and content of HTTP request differ based on different HTTP versions, certain principles stay the same. The request message should consist of a method (eg. GET) that tells the server what it should do. Next should be the path to the requested target (eg. /index.html). Finally it should include the HTTP version. Here is an example of a request message: 
 ```
@@ -48,7 +48,7 @@ In HTTP 2 uses frames but this project is focused on HTTP 1.1. For more info che
 
 ### Next Steps/Improvements to make
 <details open><summary><h5>Collapse/Expand</h5></summary>
-This HTTP server is very simple and I plan to work on it a bit more when I have time. For performance, the server lacks multi-threading to handle concurrent connections. I also need to add checks for HTTP status codes. There are also probably many security issues with this server. For example, the server could be vulnerable to buffer overflow attack that can be exploited with a HTTP GET request.
+This HTTP server is very simple and I plan to work on it a bit more when I have time. For performance, the server lacks multi-threading to handle concurrent connections. There are also probably many security issues with this server. For example, the server could be vulnerable to buffer overflow attack that can be exploited with a HTTP GET request.
 </details>
 
 ## Resources Used

@@ -4,4 +4,4 @@ TCP client and server written in C. Uses basic socket programming. Client writes
 ## Code Demonstration
 Example of how it works. Tested on my PC as server and Raspberry Pi as client. 
 
-![alt text](https://github.com/jamesyoung-15/http-server/blob/main/images/tcp_test.gif)
+![alt text](https://github.com/jamesyoung-15/http-server/blob/main/src/images/tcp_test.gif)
