@@ -12,7 +12,7 @@ cd http-server
 gcc http-server.c -o http-server.o
 ./http-server.o
 ```
-Then go to http://localhost:4545 on same machine. When using another machine use server IP eg. 192.168.0.15:4545. To access other files, state the file path (in this directory) eg. http://localhost:4545/images/testpic.png.
+Then go to http://localhost:4545 on same machine. When using another machine use server IP eg. 192.168.0.15:4545. To access other files, state the file path (in this directory) eg. http://localhost:4545/src/images/bongo-cat.gif.
 
 ## Project Write-Up
 ### Background Info
@@ -47,9 +47,9 @@ In HTTP 2 uses frames but this project is focused on HTTP 1.1. For more info che
 ### Code Explanation
 <details open><summary><h5>Collapse/Expand</h5></summary>
 
-The code follows closely to the logic and steps explained in the background above. 
+The [code](https://github.com/jamesyoung-15/http-server/blob/main/http-server.c) follows closely to the logic and steps explained in the background above. 
 
-1. First part of the program just follows basic socket programming
+1. First part of the program just follows basic socket programming.
     - Create a server's socket
     ```
     //check man socket for more detail
@@ -119,7 +119,7 @@ The code follows closely to the logic and steps explained in the background abov
             }
         }
         ```
-        - We need the file extension to specify in the HTTP response. So we just cutoff the file name (ie. everything before the '.')
+        - We need the file extension to specify in the HTTP response. So we just cutoff the file name (ie. everything before the '.'). Also since the loop stops at a `'.'` it means that if someone tries to access a parent directory (ie. using ../) it won't work and will return 404.
         ```
         //loop through file name
         for (int i=0;i<PATHSIZE;i++)

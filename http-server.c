@@ -7,7 +7,6 @@
 //network headers
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 
 #define PORT 4545
 #define BUFFERSIZE 8096
