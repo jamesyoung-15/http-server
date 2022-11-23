@@ -44,11 +44,146 @@ Content-Length: 88
 In HTTP 2 uses frames but this project is focused on HTTP 1.1. For more info check the Mozilla Developer docmentation listed below.
 </details>
 
+### Code Explanation
+<details open><summary>Collapse/Expand</summary>
+The code follows closely to the logic and steps explained in the background above. 
 
+- First part of the program just follows basic socket programming
+    - Create a server's socket
+    ```
+    //check man socket for more detail
+    serverFd = socket(AF_INET, //domain type
+        SOCK_STREAM, //Use TCP (UDP is SOCK_DGRAM)
+        0 //protocol most of the time set to 0
+        );
+    ```
+    - Bind socket to accept any local address and port 4545
+    ```
+    //check man bind for more detail
+    server_address.sin_family = AF_INET; //set to AF_INET for TCP and UDP
+    server_address.sin_addr.s_addr = htonl(INADDR_ANY); //accept any ip address, htonl to convert host byte order to network byte order
+    server_address.sin_port = htons(PORT); //listen on defined port, htons to convert host byte order to network byte order
+    ```
+    - Listen for connection
+    ```
+    //check man listen for more detail
+    listen(serverFd, SOMAXCONN) //SOMAXCONN is max number of connections
+    ```
+- Now that we created and binded the socket and it is ready to connect, the next part is where we implement the http protocol. We set this part in an infinite for loop.
+    - Accept client's connection, client's socket is stored in clientFd
+    ```
+    //check man accept for more detail
+    clientFd = accept(serverFd, //server's socket
+    (struct sockaddr *)&client_address, //pointer to client's address struct info. we use (struct sockaddr *) to cast since we need a pointer
+    (socklen_t *) &client_address); //pointer to client's address info size, once again we cast with (socklen_t *)
+    ```
+    - Read and store client's HTTP request generated from web browser to `buf`.
+    ```
+    int valread = read(clientFd,buf,sizeof(buf));
+    ```
+    - From the HTTP request, we find what the client resource/file the client has requested. The code is a bit long and not the greatest solution:
+        - The first line HTTP request is something like this `GET /src/images/bongo-cat.gif HTTP/1.1`. We are only concerned with the file path `src/images/bongo-cat.gif`. Hence I looped starting from 5 and ending before HTTP/1.1.
+        ```
+                //skip GET / (hence i=5) to get to filepath, stop once space is detected (means filepath ended) and set it to null
+        for(int i=5;i<BUFFERSIZE;i++)
+        {
+            if(buf[i]==' ')
+            {
+                targetPath[i-5]='\0';
+                targetLength=i-5;
+                break;
+            }
+        }
+        ```
+        - If the client isn't looking for a specific file (ie. localhost:4545), then we default to index.html:
+        ```
+        if(targetLength ==0 && (strcmp(targetPath, "\0")==0))
+        {
+            printf("No specific file/target name. Default to index.html\n");
+            strncpy(targetPath, "src/index.html", sizeof(targetPath));
+            targetLength = 10;
+        }
+        ```
+        - Otherwise we store the file path.
+        ```
+        //get target path from http request buffer and put to char array
+        else
+        {
+            for(int i = 0;i<targetLength;i++)
+            {
+                targetPath[i] = buf[i+5];
+            }
+        }
+        ```
+        - We need the file extension to specify in the HTTP response. So we just cutoff the file name (ie. everything before the '.')
+        ```
+        //loop through file name
+        for (int i=0;i<PATHSIZE;i++)
+        {
+            if(targetPath[i]=='.')
+            {
+                break;
+            }
+            fileNameLength++;
+        }
+        fileNameLength+=1; //add one to include the dot '.'
+        //loop through extension, stops at null
+        for(int i = fileNameLength;i<PATHSIZE;i++)
+        {
+            if(targetPath[i]=='\0')
+            {
+                break;
+            }
+            fileExtension[i-fileNameLength]=targetPath[i];
+        }
+        ```
+    - Once we obtained the file path and extension, we open the file with `fopen`, check for error 404 (ie. make sure it's not null), then we first send the corresponding HTTP response with the correct content type header and then send the actual file itself with fread() to read file and send() to send.
+    ```
+        //open file
+        FILE *file = fopen(targetPath,"rb");
+        //if can't open file, return null and write 404 error
+        if(file == NULL)
+        {
+            printf("Client requested file cannot be found, error status 404.\n");
+            sprintf(httpResponse,"HTTP/1.1 404 Not Found\nContent-Type: text/plain\n\n404 Not Found");
+            printf("Response:\n%s\n",httpResponse);
+            write(clientFd,httpResponse,strlen(httpResponse));
+        }
+        //else send http response and requested file
+        else{
+            //using extension name to get relevant content type field string, eg. html will mean content type is text/html
+            for(int i=0;contentType[i].extension!=0;i++)
+            {
+                if(strncmp(fileExtension, contentType[i].extension, strlen(contentType[i].extension))==0)
+                {
+                    httpContent = contentType[i].extension;
+                    break;
+                }
+            }
+            //write and send http response
+            sprintf(httpResponse,"HTTP/1.1 200 OK\nServer: James' Server v0.1\nContent-Type: %s\n\n",httpContent);
+            write(clientFd, httpResponse, strlen(httpResponse));
+            size_t n;
+            char fileBuf[BUFFERSIZE]={0};
+            //send file
+            while((n=fread(fileBuf,1,sizeof(fileBuf),file))>0)
+            {
+                if(send(clientFd,fileBuf,n,0)!=n)
+                {
+                    perror("Couldn't send file.\n");
+                    break;
+                }
+            }
+            //close requested file, remember can't be null or else seg fault so keep it in this condition
+            fclose(file);
+        }
+    ```
+    
+</details>
 
 ### Next Steps/Improvements to make
 <details open><summary><h5>Collapse/Expand</h5></summary>
-This HTTP server is very simple and I plan to work on it a bit more when I have time. For performance, the server lacks multi-threading to handle concurrent connections. There are also probably many security issues with this server. For example, the server could be vulnerable to buffer overflow attack that can be exploited with a HTTP GET request.
+This HTTP server is very simple and I plan to work on it a bit more when I have time. For performance, the server uses an iterative approach lacks multi-threading to handle concurrent connections. There are also probably many security issues with this server. For example, the server could be vulnerable to buffer overflow attack that can be exploited with a HTTP GET request.
 </details>
 
 ## Resources Used
