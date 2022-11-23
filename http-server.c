@@ -16,7 +16,7 @@
 
 int main()
 {
-    //variables for socket
+    /*variables*/
     struct sockaddr_in server_address, client_address; //client and server address structs
     int serverFd, clientFd, fileFd; //file descriptors
     int serv_address_length = sizeof(server_address); //get size of server address struct
@@ -24,9 +24,9 @@ int main()
     char buf[BUFFERSIZE] = {0}; //buffer for http request
     char *testResponsee = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!"; //http response test
     char *forbiddenResponse = "HTTP/1.1 403 Forbidden\n Content-Type: text/plain\n Content-Length: 13\n\n403 Forbidden";
-    char *htmlResponse = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><head>Hello World. This is my static page.</head></html>";
+    char htmlResponse[BUFFERSIZE]={0};
 
-    //create socket
+    /*socket creation*/
     serverFd = socket(AF_INET, //domain type
      SOCK_STREAM, //Use TCP (UDP is SOCK_DGRAM)
       0 //protocol most of the time set to 0
@@ -40,7 +40,7 @@ int main()
     }
     printf("Socket created\n");
 
-    //bind socket
+    /*binding socket*/
     memset(&server_address, 0, serv_address_length); //set memory address of server address to 0
     server_address.sin_family = AF_INET; //set to AF_INET for TCP and UDP
     server_address.sin_addr.s_addr = htonl(INADDR_ANY); //accept any ip address, htonl to convert host byte order to network byte order
@@ -55,8 +55,8 @@ int main()
     }
     printf("Socket binded\n");
 
-    //listen socket, SOMAXCONN is maximum connections allowed (see man for listen)
-    if(listen(serverFd, SOMAXCONN)<0)
+    /*listen for connections*/
+    if(listen(serverFd, SOMAXCONN)<0) //somaxconn is max number you can pass to listen
     {
         perror("Error listening\n");
         close(serverFd);
@@ -64,7 +64,7 @@ int main()
     }
     printf("Socket is listening for incoming connection\n");
 
-    //accept, read/write section
+    /*accept connection, read request, write response*/
     while(1)
     {
         //accept incoming connection, see man accept for more details
@@ -73,7 +73,7 @@ int main()
         if(clientFd<0)
         {
             perror("Connection declined/error\n");
-            continue;
+            return 1;
         }
         printf("Client connected\n");
 
@@ -84,7 +84,7 @@ int main()
         {
             write(clientFd,forbiddenResponse,strlen(forbiddenResponse));
         }
-        //printf("%s\n",&buf[0]);
+
         //skip GET and space (hence i=4) to get to filepath, stop once second space is detected
         int targetLength = 0;
         for(int i=4;i<BUFFERSIZE;i++)
@@ -98,19 +98,28 @@ int main()
                 targetLength++;
             }
         }
-        char targetPath[targetLength];
-        //not working change tmr
-        for(int i = 0;i<targetLength;i++)
+        //get target path and put to array, set last index to null
+        char targetPath[targetLength+1];
+        for(int i = 0;i<targetLength+1;i++)
         {
             targetPath[i] = buf[i+4];
         }
-        //printf("%d: %s\n",targetLength,targetPath);
+        targetPath[targetLength] ='\0';
+        printf("Target has char length of %d and content is: %s.\n",targetLength,targetPath);
         //if request line is GET / with no filename, redirect to index.html by writing GET /src/index.html
+        if(targetLength==0)
+        {
+            perror("No target specified\n");
+            return 1;
+        }
+        else if(targetLength ==1 && strcmp(targetPath, "/\0")==0)
+        {
+            printf("Default to index.html\n");
+            //sprintf(htmlResponse,"HTTP/1.1 200 OK\nContent-Length: %d\nConnection: close\nContent-Type: %s\n\n" , );
+        }
 
-
-
-        //write(clientFd,testResponsee,strlen(testResponsee));
-        write(clientFd, htmlResponse, strlen(htmlResponse));
+        write(clientFd,testResponsee,strlen(testResponsee));
+        //write(clientFd, htmlResponse, strlen(htmlResponse));
 
 
         //close sockets
