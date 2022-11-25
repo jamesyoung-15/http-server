@@ -51,7 +51,7 @@ The [code](https://github.com/jamesyoung-15/http-server/blob/main/http-server.c)
 
 1. First part of the program just follows basic socket programming.
     - Create a server's socket
-    ```
+    ``` C
     //check man socket for more detail
     serverFd = socket(AF_INET, //domain type
         SOCK_STREAM, //Use TCP (UDP is SOCK_DGRAM)
@@ -59,21 +59,21 @@ The [code](https://github.com/jamesyoung-15/http-server/blob/main/http-server.c)
         );
     ```
     - Bind socket to accept any local address and port 4545
-    ```
+    ``` C
     //check man bind for more detail
     server_address.sin_family = AF_INET; //set to AF_INET for TCP and UDP
     server_address.sin_addr.s_addr = htonl(INADDR_ANY); //accept any ip address, htonl to convert host byte order to network byte order
     server_address.sin_port = htons(PORT); //listen on defined port, htons to convert host byte order to network byte order
     ```
     - Listen for connection
-    ```
+    ``` C
     //check man listen for more detail
     listen(serverFd, SOMAXCONN) //SOMAXCONN is max number of connections
     ```
 2. Now that we created and binded the socket and it is ready to connect, the next part is where we implement the http protocol. We set this part in an infinite for loop.
 
     - Accept client's connection, client's socket is stored in clientFd
-    ```
+    ``` C
     //check man accept for more detail
     clientFd = accept(serverFd, //server's socket
     (struct sockaddr *)&client_address, //pointer to client's address struct info. we use (struct sockaddr *) to cast since we need a pointer
@@ -81,13 +81,13 @@ The [code](https://github.com/jamesyoung-15/http-server/blob/main/http-server.c)
     ```
 
     - Read and store client's HTTP request generated from web browser to `buf`.
-    ```
+    ``` C
     int valread = read(clientFd,buf,sizeof(buf));
     ```
 
     - From the HTTP request, we find what the client resource/file the client has requested. The code is a bit long and not the greatest solution:
         - The first line HTTP request is something like this `GET /src/images/bongo-cat.gif HTTP/1.1`. We are only concerned with the file path `src/images/bongo-cat.gif`. Hence I looped starting from 5 and ending before HTTP/1.1.
-        ```
+        ``` C
         //skip GET / (hence i=5) to get to filepath, stop once space is detected (means filepath ended) and set it to null
         for(int i=5;i<BUFFERSIZE;i++)
         {
@@ -100,7 +100,7 @@ The [code](https://github.com/jamesyoung-15/http-server/blob/main/http-server.c)
         }
         ```
         - If the client isn't looking for a specific file (ie. localhost:4545), then we default to index.html:
-        ```
+        ``` C
         if(targetLength ==0 && (strcmp(targetPath, "\0")==0))
         {
             printf("No specific file/target name. Default to index.html\n");
@@ -109,7 +109,7 @@ The [code](https://github.com/jamesyoung-15/http-server/blob/main/http-server.c)
         }
         ```
         - Otherwise we store the file path.
-        ```
+        ``` C
         //get target path from http request buffer and put to char array
         else
         {
@@ -120,7 +120,7 @@ The [code](https://github.com/jamesyoung-15/http-server/blob/main/http-server.c)
         }
         ```
         - We need the file extension to specify in the HTTP response. So we just cutoff the file name (ie. everything before the '.'). Also since the loop stops at a `'.'` it means that if someone tries to access a parent directory (ie. using ../) it won't work and will return 404.
-        ```
+        ``` C
         //loop through file name
         for (int i=0;i<PATHSIZE;i++)
         {
@@ -142,12 +142,12 @@ The [code](https://github.com/jamesyoung-15/http-server/blob/main/http-server.c)
         }
         ```
     - Once we obtained the file path and extension, we open the file with `fopen`.
-    ```
+    ``` C
     //open file
     FILE *file = fopen(targetPath,"rb");
     ```
     - Check for null, if null means file doesn't exist and we return error status 404.
-    ```
+    ``` C
     //if can't open file, return null and write 404 error
     if(file == NULL)
     {
@@ -159,7 +159,7 @@ The [code](https://github.com/jamesyoung-15/http-server/blob/main/http-server.c)
     ```
     - Otherwise we then use the extension name from before and match it with the struct `contentType` to get the correct content type header for the HTTP response. Then we write and send the HTTP response to the client, then send the file requested to the client.
 
-    ```
+    ``` C
     //else send http response and requested file
     else{
         //using extension name to get relevant content type field string, eg. html will mean content type is text/html
